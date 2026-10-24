@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Voting System - Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>LOGIN</h1>
+
+    {% if message %}
+    <p class="message">{{ message }}</p>
+    {% endif %}
+
+    <form method="POST" action="/login">
+        <label>Roll No:</label>
+        <input type="text" name="roll_no">
+        <br><br>
+        <label>Password:</label>
+        <input type="password" name="password">
+        <br><br>
+        <button type="submit">Login</button>
+    </form>
+
+    <p class="note">New voter? <a href="/">Register here</a></p>
+
+    <h4>Vote In Just Three Simple Steps:</h4>
+    <ol>
+        <li>Enter Your Roll No.</li>
+        <li>Enter Password</li>
+        <li>Select Candidate and VOTE</li>
+    </ol>
+
+
+
+    <div class="mentor-block">
+        <p>Under the guidance of <strong>Dr. Rishabh Deo Pandey</strong></p>
+        <p>Assistant Professor</p>
+        <p>rishabh@mitsgwalior.in</p>
+    </div>
+
+    <div class="footer">
+        <h6>Developed By Mradul Sharma</h6>
+        <div class="email">mradul0019@gmail.com</div>
+        <div class="links">
+            <a href="#">Github</a> |
+            <a href="#">LinkedIn</a>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Voting System - Vote</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>CAST YOUR VOTE</h1>
+    <p class="note">Logged in as {{ roll_no }} | <a href="/logout">Logout</a></p>
+    <p class="note">Select one candidate and click Submit Vote. You can only vote once.</p>
+
+    {% if message %}
+    <p class="message">{{ message }}</p>
+    {% endif %}
+
+    <form class="wide" method="POST" action="/vote">
+
+        {% for c in candidates %}
+        <div class="candidate-option">
+            <input type="radio" name="candidate" value="{{ c[0] }}" id="cand{{ c[0] }}">
+            <label for="cand{{ c[0] }}">{{ c[1] }}</label>
+        </div>
+        {% endfor %}
+
+        <button type="submit">Submit Vote</button>
+
+    </form>
+
+</body>
+</html>

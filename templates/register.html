@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Voting System - Register</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>REGISTER</h1>
+    <p class="note">Register once using your roll number. You will use this password to log in and vote later.</p>
+
+    {% if message %}
+    <p class="message">{{ message }}</p>
+    {% endif %}
+
+    <form method="POST" action="/">
+        <label>Roll No:</label>
+        <input type="text" name="roll_no">
+        <br><br>
+        <label>Create Password:</label>
+        <input type="password" name="password">
+        <br><br>
+        <button type="submit">Register</button>
+    </form>
+
+    <p class="note">Already registered? <a href="/login">Login here</a></p>
+
+</body>
+</html>

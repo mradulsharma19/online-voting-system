@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Voting System - Admin</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>ADMIN DASHBOARD</h1>
+    <p class="note">Read-only preview. Admin login and election controls are added in Milestone 3.</p>
+
+    <h2>Election Summary</h2>
+    <div class="panel">
+        <div class="status-row"><span>Eligible voters (loaded)</span><strong>{{ total }}</strong></div>
+        <div class="status-row"><span>Registered voters</span><strong>{{ registered }}</strong></div>
+        <div class="status-row"><span>Votes cast</span><strong>{{ voted }}</strong></div>
+    </div>
+
+    <h2>Election Controls</h2>
+    <div class="panel">
+        <div class="status-row">
+            <span>Voting status</span>
+            <button type="button" disabled>Start Voting (Milestone 3)</button>
+        </div>
+        <div class="status-row">
+            <span>Results status</span>
+            <button type="button" disabled>Show Results (Milestone 3)</button>
+        </div>
+    </div>
+
+    <h2>Candidates</h2>
+    <div class="panel">
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Votes</th>
+            </tr>
+            {% for c in candidates %}
+            <tr>
+                <td>{{ c[0] }}</td>
+                <td>{{ c[1] }}</td>
+                <td>{{ c[2] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+</body>
+</html>
