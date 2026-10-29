@@ -5,10 +5,14 @@ name: Web Build + Deploy to GitHub Pages
 on:
   push:
    branches:
-     - main
+     - database
+     - sample_voters
+     - app
   pull_request:
    branches:
-     - main
+     - database
+     - sample_voters
+     - app
     
   # Allows you to run this workflow manually from the Actions tab of the repository
   workflow_dispatch:
