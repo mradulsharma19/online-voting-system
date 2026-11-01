@@ -1,16 +1,18 @@
 # Online Voting System
 
-A simple web-based voting system built with **Python, Flask and SQLite** as a college micro-project. An eligible voter registers once with their roll number, logs in, and can cast exactly one vote. It is designed for small elections such as class or club voting.
+A web-based voting system built with **Python, Flask and SQLite** as a college micro-project. An admin prepares the election and controls each phase. Eligible voters register once, log in while voting is open and vote exactly once. The vote stays secret: the database stores only a total for each candidate, never who voted for whom.
 
 ## Features
 
-- **Eligible list only:** a student can register only if their roll number is already on the list loaded by the admin
-- **One-time registration:** every roll number can register just once
-- **Hashed passwords:** passwords are never stored as plain text
-- **Login with sessions:** the voting page cannot be opened without logging in
-- **One vote per voter:** a `has_voted` flag blocks any second vote
-- **Secret ballot:** the database never stores which voter chose which candidate, only a total count per candidate
-- **Admin dashboard (preview):** shows eligible voters, registered voters, votes cast and candidate totals
+- **Admin module:** admin login, add and remove candidates, load and remove roll numbers, and three phase switches (registration, voting, results)
+- **Election phases:** registration, voting and results never overlap. The system refuses any change that would break the order.
+- **Eligible list only:** a student can register only if the admin has loaded their roll number
+- **One-time registration:** each roll number registers once and sets its own password
+- **Hashed passwords:** voter and admin passwords are stored only as hashes
+- **One vote per voter:** a conditional update on `has_voted` blocks double votes, even from two browser sessions
+- **Secret ballot:** no table links a voter to a candidate
+- **Results page:** totals only, shown after voting is closed and the admin publishes them
+- **Home page:** one page with buttons for Register, Voter Login, Results and Admin Login, each with a live Open/Closed tag
 
 ## Tech Stack
 
@@ -21,156 +23,154 @@ A simple web-based voting system built with **Python, Flask and SQLite** as a co
 | Frontend | HTML, CSS, Jinja templates |
 | Password security | Werkzeug password hashing |
 
-## How It Works
+## How an Election Works
 
-1. The admin loads the list of eligible roll numbers and the candidates into the database.
-2. A student opens the register page and sets a password. The roll number must be on the eligible list and must not be registered already.
-3. The student logs in with the roll number and password. Flask remembers the login in a session.
-4. On the voting page the student picks one candidate. The candidate's vote count goes up by one and the voter is marked as `has_voted`.
-5. Any later attempt to vote is blocked.
+1. **Admin** logs in, loads the eligible roll numbers and adds at least 2 candidates.
+2. **Admin** opens registration. Each student registers once at `/register`.
+3. **Admin** closes registration and starts voting. Each student logs in at `/login` and votes once.
+4. **Admin** stops voting and shows the results. Anyone can open `/results`.
+
+### Rules the System Enforces
+
+| Action | Rule |
+|---|---|
+| Open registration | Not allowed while voting is open |
+| Start voting | Not allowed while registration is open or results are visible, and needs at least 2 candidates |
+| Show results | Not allowed while voting is open |
+| Add or remove a candidate | Not allowed while voting is open or after any vote exists |
+| Load roll numbers | Not allowed while voting is open |
+| Remove a roll number | Not allowed while voting is open or results are visible, and never for a voter who has already voted |
 
 ## Pages
 
-| Route | Page | Description |
-|---|---|---|
-| `/` | Register | Roll number and new password |
-| `/login` | Login | Roll number and password |
-| `/vote` | Vote | Candidate list, one choice, only for logged-in voters |
-| `/logout` | Logout | Ends the session |
-| `/admin` | Admin dashboard | Read-only summary (controls come in Milestone 3) |
+| Route | Description |
+|---|---|
+| `/` | Home page with a button for every part of the system |
+| `/register` | Voter registration (only while registration is open) |
+| `/login` | Voter login (only while voting is open) |
+| `/vote` | Candidate list and vote (logged-in voters only) |
+| `/results` | Candidate totals (after voting closes and the admin publishes) |
+| `/admin/login` | Admin login |
+| `/admin` | Admin dashboard (protected) |
 
 ## Database
 
-Three tables are used in `voting.db`:
+Four tables in `voting.db`:
 
-**voters**
+| Table | Columns |
+|---|---|
+| `voters` | `roll_no` (primary key), `password_hash`, `has_voted` |
+| `candidates` | `candidate_id` (primary key), `name`, `vote_count` |
+| `election_settings` | `registration_open`, `voting_open`, `results_visible`, plus `registration_start` and `registration_end` (kept for a planned registration window) |
+| `admins` | `username` (primary key), `password_hash` |
 
-| Column | Type | Description |
-|---|---|---|
-| `roll_no` | TEXT (primary key) | Unique roll number |
-| `password_hash` | TEXT | Hashed password, empty until the student registers |
-| `has_voted` | INTEGER | 0 = not voted, 1 = voted |
-
-**candidates**
-
-| Column | Type | Description |
-|---|---|---|
-| `candidate_id` | INTEGER (primary key) | Auto-incremented id |
-| `name` | TEXT | Candidate name |
-| `vote_count` | INTEGER | Total votes received |
-
-**election_settings**
-
-| Column | Type | Description |
-|---|---|---|
-| `registration_start`, `registration_end` | TEXT | Registration window |
-| `voting_open` | INTEGER | Voting on/off switch |
-| `results_visible` | INTEGER | Results on/off switch |
-
-There is intentionally no table that links a voter to the candidate they chose, so the vote stays secret.
+There is intentionally no table linking a voter to a candidate.
 
 ## Getting Started
 
-### Prerequisites
+### Requirements
 
 - Python 3.9 or newer
 - pip
 
-### Installation and run
+### Run it
+
+Open a terminal **inside the project folder** and run:
 
 ```
 pip install flask
 python database.py
-python sample_voters.py
+python create_admin.py
 python app.py
 ```
 
 Then open **http://127.0.0.1:5000** in your browser.
 
-- `database.py` creates the database and the tables (run once)
-- `sample_voters.py` adds sample roll numbers (`BTAI26O1001` to `BTAI26O1005`) and
-  five sample candidates (run once)
+- `database.py` creates the database and tables. It is safe to run again, and it upgrades an older database.
+- `create_admin.py` asks for an admin username and password. Typing the password is hidden.
+- `app.py` starts the server.
 
-To use real roll numbers, edit the lists at the top of `sample_voters.py`, delete `voting.db`, and run `database.py` and `sample_voters.py` again.
+### Optional: load sample data
 
-### Try it out
+```
+python sample_voters.py
+```
 
-| Step | Expected result |
+Adds the sample roll numbers `0101AI26001` to `0101AI26005` and three sample candidates. You can also load roll numbers and candidates from the admin dashboard.
+
+### Helper scripts
+
+| Script | What it does |
 |---|---|
-| Register with roll no `9999` | "This roll number is not eligible to register." |
-| Register with `BTAI26O1001` and a password | Registration successful |
-| Register with `BTAI26O1001` again | "This roll number is already registered." |
-| Log in with a wrong password | "Invalid roll number or password." |
-| Log in with the correct details | Voting page with the candidate list |
-| Submit a vote | "Your vote has been recorded." |
-| Open `/vote` again | "You have already cast your vote." |
-| Open `/admin` | Summary and candidate totals |
+| `show_results.py` | Prints the switches, vote counts and voter status in the terminal |
+| `reset_demo.py` | Resets registrations, votes and switches (the admin account is kept) |
 
-To see the totals in the terminal, run `python show_results.py`. To repeat the demo from scratch, run `python reset_demo.py`.
+### Automatic tests
+
+```
+python run_tests.py
+```
+
+Runs 86 end-to-end checks on a temporary database, so your real data is never touched.
 
 ## Project Structure
 
 ```
-app.py             Flask app (register, login, vote, logout, admin preview)
-database.py        Creates the database and the three tables
-sample_voters.py   Adds sample voters and candidates
-show_results.py    Prints vote counts and voter status in the terminal
-reset_demo.py      Resets registrations and votes for a fresh demo
+app.py             Flask app: voter routes, admin routes, results
+database.py        Creates and upgrades the database
+create_admin.py    Creates the admin account
+sample_voters.py   Adds sample roll numbers and candidates (optional)
+show_results.py    Prints switches, counts and voter status
+reset_demo.py      Resets the demo
+run_tests.py       Automatic tests
 requirements.txt   Python dependencies
-templates/         HTML pages (register, login, vote, message, admin)
+templates/         HTML pages
 static/style.css   Shared stylesheet
 ```
 
 ## Security Notes
 
-- Passwords are stored only as hashes (Werkzeug), never as plain text.
-- SQL queries use placeholders (`?`), which protects against SQL injection.
-- The login page shows the same error for a wrong roll number and a wrong password, so valid roll numbers cannot be guessed.
-- The voting page checks the session before showing anything.
-- The `has_voted` check runs both before the candidates are shown and when the vote is submitted.
+- Voter and admin passwords are stored only as hashes
+- SQL uses placeholders, which protects against SQL injection
+- Wrong roll number and wrong password give the same error message
+- Admin pages are protected, and the admin session is separate from the voter session
+- Candidate names are escaped by the templates
+- Set the `SECRET_KEY` environment variable for real use. In PowerShell: `$env:SECRET_KEY="your-long-random-text"`
+- Never upload `voting.db` to GitHub
 
 ## Milestones
 
 | # | Milestone | Deadline | Status |
 |---|---|---|---|
-| 1 | Requirement Analysis and Architectural Design (SRS, architecture diagram, database schema, UI wireframes) | 2 Oct 2026 | Completed |
-| 2 | Core Module Implementation and Prototyping (database handlers, registration, login, voting logic, basic templates) | 17 Oct 2026 | Completed |
-| 3 | Integration and Intermediate Evaluation (admin module, voting and results switches, results page, code review, usability test) | 1 Nov 2026 | Planned |
-| 4 | Comprehensive Testing and Optimization (security testing, edge cases, query optimization, user manual) | 16 Nov 2026 | Planned |
+| 1 | Requirement Analysis and Architectural Design | 2 Oct 2026 | Completed |
+| 2 | Core Module Implementation and Prototyping | 17 Oct 2026 | Completed |
+| 3 | Integration and Intermediate Evaluation (admin module, election phases, results page, home page, automatic tests) | 1 Nov 2026 | Completed |
+| 4 | Comprehensive Testing and Optimization | 16 Nov 2026 | Next |
 | 5 | Deployment, Final Documentation and Viva Preparation | 1 Dec 2026 | Planned |
 
-### Done in Milestone 2
+### Planned for Milestone 4
 
-- Database with `voters`, `candidates` and `election_settings` tables
-- Registration for eligible roll numbers with hashed passwords
-- Login with session handling
-- Voting with a duplicate-vote check
-- Read-only admin dashboard preview
-
-### Planned for Milestone 3
-
-- Admin login and admin controls
-- Add and remove candidates from the browser
-- Voting on/off and results on/off switches
-- Registration time window set by the admin
-- Results page showing only candidate totals, visible only after voting is closed
+- Security testing (SQL injection, XSS, CSRF) and a short audit report
+- Load testing and query optimization
+- Limit on repeated wrong password attempts
+- User manual for voters and admin
 
 ## Known Limitations
 
-- The `/admin` page has no login yet (added in Milestone 3).
-- The `voting_open` and `results_visible` switches exist in the database but are not enforced in the code yet.
-- Sample voters and candidates are loaded with `sample_voters.py` instead of the browser.
-- The Flask `secret_key` is written in the code; for real hosting it should come from an environment variable.
-- There is no CSRF protection yet.
-- SQLite is suitable for small elections, not for very large ones.
+- No CSRF protection yet
+- No limit on repeated wrong password attempts
+- Registration uses an open/close switch. A start and end date-time window is planned.
+- A local fallback secret key exists for development
+- No password reset for voters
+- SQLite suits small elections only
 
 ## Future Scope
 
-- Automatic start and stop of registration and voting by date and time
+- Registration window with start and end date-time
 - OTP-based verification during registration
-- Real-time vote count updates with charts on the admin dashboard
+- Live turnout and charts on the admin dashboard
 - Admin audit log (actions only, never who voted for whom)
-- Hosting online so voting can be done from any device
+- Online hosting for a live demo
 
 ## Author
 
