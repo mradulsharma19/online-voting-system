@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Voting System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>ONLINE VOTING SYSTEM</h1>
+    <p class="note">Secure, simple and one vote per voter.</p>
+
+    <div class="home-grid">
+
+        <a class="home-card" href="/register">
+            <h3>Register</h3>
+            <p>Create your voter account</p>
+            {% if settings.registration_open %}<span class="tag open">Open</span>{% else %}<span class="tag closed">Closed</span>{% endif %}
+        </a>
+
+        <a class="home-card" href="/login">
+            <h3>Voter Login</h3>
+            <p>Log in and cast your vote</p>
+            {% if settings.voting_open %}<span class="tag open">Open</span>{% else %}<span class="tag closed">Closed</span>{% endif %}
+        </a>
+
+        <a class="home-card" href="/results">
+            <h3>Results</h3>
+            <p>See the final totals</p>
+            {% if settings.results_visible %}<span class="tag open">Visible</span>{% else %}<span class="tag closed">Hidden</span>{% endif %}
+        </a>
+
+        <a class="home-card" href="/admin/login">
+            <h3>Admin Login</h3>
+            <p>Manage the election</p>
+        </a>
+
+    </div>
+
+    <div class="mentor-block">
+        <p>Under the guidance of <strong>Dr. Rishabh Deo Pandey</strong>, Assistant Professor</p>
+    </div>
+
+    <div class="footer">
+        <h6>Developed By Mradul Sharma</h6>
+        <h4>
+        Email: <a href="mailto:mradul0019@gmail.com" class="email">mradul0019@gmail.com</a> 
+        | 
+        GitHub: <a href="https://github.com/mradulsharma19/online-voting-system.git" target="_blank" class="github">online-voting-system</a>
+        </h4>
+        
+    </div>
+
+</body>
+</html>

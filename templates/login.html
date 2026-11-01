@@ -12,6 +12,7 @@
     <p class="message">{{ message }}</p>
     {% endif %}
 
+    {% if voting_open %}
     <form method="POST" action="/login">
         <label>Roll No:</label>
         <input type="text" name="roll_no">
@@ -21,8 +22,9 @@
         <br><br>
         <button type="submit">Login</button>
     </form>
+    {% endif %}
 
-    <p class="note">New voter? <a href="/">Register here</a></p>
+    <p class="note">New voter? <a href="/register">Register here</a> | <a href="/results">View results</a> | <a href="/">Home</a></p>
 
     <h4>Vote In Just Three Simple Steps:</h4>
     <ol>
@@ -31,7 +33,8 @@
         <li>Select Candidate and VOTE</li>
     </ol>
 
-
+    <h5>Why to use this system</h5>
+    <p class="center">This Online Voting System Prevents Duplicate Votes</p>
 
     <div class="mentor-block">
         <p>Under the guidance of <strong>Dr. Rishabh Deo Pandey</strong></p>

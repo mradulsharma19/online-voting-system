@@ -7,13 +7,15 @@
 <body>
 
     <h1>REGISTER</h1>
-    <p class="note">Register once using your roll number. You will use this password to log in and vote later.</p>
 
     {% if message %}
     <p class="message">{{ message }}</p>
     {% endif %}
 
-    <form method="POST" action="/">
+    {% if registration_open %}
+    <p class="note">Register once using your roll number. You will use this password to log in and vote later.</p>
+
+    <form method="POST" action="/register">
         <label>Roll No:</label>
         <input type="text" name="roll_no">
         <br><br>
@@ -22,8 +24,9 @@
         <br><br>
         <button type="submit">Register</button>
     </form>
+    {% endif %}
 
-    <p class="note">Already registered? <a href="/login">Login here</a></p>
+    <p class="note">Already registered? <a href="/login">Login here</a> | <a href="/results">View results</a> | <a href="/">Home</a></p>
 
 </body>
 </html>

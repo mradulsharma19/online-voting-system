@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Voting System - Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <h1>ELECTION RESULTS</h1>
+    <p class="note">Only the total votes of each candidate are shown. Nobody can see who voted for whom.</p>
+
+    <div class="panel">
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Candidate</th>
+                <th>Votes</th>
+            </tr>
+            {% for c in candidates %}
+            <tr {% if top > 0 and c[1] == top %}class="leader"{% endif %}>
+                <td>{{ loop.index }}</td>
+                <td>{{ c[0] }}</td>
+                <td>{{ c[1] }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <p class="hint">Votes cast: {{ voted }} of {{ registered }} registered voters ({{ total }} eligible).</p>
+    </div>
+
+    <p class="note"><a href="/">Home</a> | <a href="/login">Back to Login</a></p>
+
+</body>
+</html>

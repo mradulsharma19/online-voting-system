@@ -7,7 +7,13 @@
 <body>
 
     <h1>ADMIN DASHBOARD</h1>
-    <p class="note">Read-only preview. Admin login and election controls are added in Milestone 3.</p>
+    <p class="note">Logged in as {{ admin_name }} | <a href="/">Home</a> | <a href="/results">Results page</a> | <a href="/admin/logout">Logout</a></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, text in messages %}
+        <p class="flash {{ category }}">{{ text }}</p>
+        {% endfor %}
+    {% endwith %}
 
     <h2>Election Summary</h2>
     <div class="panel">
@@ -19,31 +25,104 @@
     <h2>Election Controls</h2>
     <div class="panel">
         <div class="status-row">
-            <span>Voting status</span>
-            <button type="button" disabled>Start Voting (Milestone 3)</button>
+            <span>Registration:
+                {% if settings.registration_open %}<span class="tag open">Open</span>{% else %}<span class="tag closed">Closed</span>{% endif %}
+            </span>
+            <form method="POST" action="/admin/toggle/registration">
+                <button class="small" type="submit">{% if settings.registration_open %}Close Registration{% else %}Open Registration{% endif %}</button>
+            </form>
         </div>
         <div class="status-row">
-            <span>Results status</span>
-            <button type="button" disabled>Show Results (Milestone 3)</button>
+            <span>Voting:
+                {% if settings.voting_open %}<span class="tag open">Open</span>{% else %}<span class="tag closed">Closed</span>{% endif %}
+            </span>
+            <form method="POST" action="/admin/toggle/voting">
+                <button class="small" type="submit">{% if settings.voting_open %}Stop Voting{% else %}Start Voting{% endif %}</button>
+            </form>
         </div>
+        <div class="status-row">
+            <span>Results:
+                {% if settings.results_visible %}<span class="tag open">Visible</span>{% else %}<span class="tag closed">Hidden</span>{% endif %}
+            </span>
+            <form method="POST" action="/admin/toggle/results">
+                <button class="small" type="submit">{% if settings.results_visible %}Hide Results{% else %}Show Results{% endif %}</button>
+            </form>
+        </div>
+        <p class="hint">Order of phases: Registration, then Voting, then Results. They never overlap.</p>
+    </div>
+
+    <h2>Load Eligible Roll Numbers</h2>
+    <div class="panel">
+        <form method="POST" action="/admin/load_voters">
+            <label>Paste roll numbers (separated by space, comma or new line):</label>
+            <textarea name="roll_numbers"></textarea>
+            <button type="submit">Load Roll Numbers</button>
+        </form>
     </div>
 
     <h2>Candidates</h2>
     <div class="panel">
+        <form method="POST" action="/admin/add_candidate">
+            <label>Candidate Name:</label>
+            <input type="text" name="candidate_name">
+            <button type="submit">Add Candidate</button>
+        </form>
+        {% if candidates_locked %}
+        <p class="hint">Candidates are locked: voting is open or votes have already been cast.</p>
+        {% endif %}
         <table>
             <tr>
                 <th>ID</th>
                 <th>Name</th>
                 <th>Votes</th>
+                <th>Action</th>
             </tr>
             {% for c in candidates %}
             <tr>
                 <td>{{ c[0] }}</td>
                 <td>{{ c[1] }}</td>
-                <td>{{ c[2] }}</td>
+                <td>{% if show_votes %}{{ c[2] }}{% else %}-{% endif %}</td>
+                <td>
+                    <form method="POST" action="/admin/remove_candidate/{{ c[0] }}">
+                        <button class="stop" type="submit" onclick="return confirm('Remove this candidate?')">Remove</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </table>
+        {% if not show_votes %}
+        <p class="hint">Vote counts are hidden while voting is open.</p>
+        {% endif %}
+    </div>
+
+    <h2>Voters</h2>
+    <div class="panel">
+        <table>
+            <tr>
+                <th>Roll No</th>
+                <th>Registered</th>
+                <th>Voted</th>
+                <th>Action</th>
+            </tr>
+            {% for v in voters %}
+            <tr>
+                <td>{{ v[0] }}</td>
+                <td>{% if v[1] %}Yes{% else %}No{% endif %}</td>
+                <td>{% if v[2] %}Yes{% else %}No{% endif %}</td>
+                <td>
+                    <form method="POST" action="/admin/remove_voter">
+                        <input type="hidden" name="roll_no" value="{{ v[0] }}">
+                        <button class="stop" type="submit" {% if v[2] or voters_locked %}disabled{% endif %}
+                                onclick="return confirm('Remove this roll number?')">Remove</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% if voters_locked %}
+        <p class="hint">Roll numbers cannot be removed while voting is open or results are visible.</p>
+        {% endif %}
+        <p class="hint">A voter who has already voted cannot be removed. Only whether a voter has voted is shown, never who they voted for.</p>
     </div>
 
 </body>
